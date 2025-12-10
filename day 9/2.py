@@ -1,4 +1,8 @@
-with open("input.txt", "r") as f:
+import numpy as np
+import sys
+sys.setrecursionlimit(1000)
+
+with open("example_input.txt", "r") as f:
     file = f.readlines()
 
 tiles = [[int(x) for x in y.strip("\n").split(",")] for y in file]
@@ -6,6 +10,33 @@ tiles = [[int(x) for x in y.strip("\n").split(",")] for y in file]
 max_x = max(x[0] for x in tiles)
 max_y = max(x[1] for x in tiles)
 
+def filling(x, y):
+    global area
+    print(area)
+    if area[y + 1][x] == ".":
+        i = 0
+        while area[y + 1 + i][x] != "#":
+            area[y + 1 + i][x] = "#"
+            i += 1
+        filling(x, y + i +1)
+    if area[y][x + 1] == ".":
+        i = 0
+        while area[y][x + 1 + i] != "#":
+            area[y][x + 1 + i] = "#"
+            i += 1
+        filling(x + 1 + i, y)
+    if area[y - 1][x] == ".":
+        i = 0
+        while area[y - 1 - i][x] != "#":
+            area[y - 1 - i][x] = "#"
+            i += 1
+        filling(x, y - 1 - i)
+    if area[y][x - 1] == ".":
+        i = 0
+        while area[y][x - 1 - i] != "#":
+            area[y][x - 1 - i] = "#"
+            i += 1
+        filling(x - 1 - i, y)
 
 #znalezc poczatek i szukac jak zegar i laczyc w area i tabela connect
 def first_search(tiles):
@@ -48,6 +79,8 @@ def down(tiles, xs, ys):
     return 0
 
 #area = [['.' for x in range(max_x+5)] for y in range(max_y+5)]
+area = np.full((max_y + 3, max_x + 3), ".", dtype="U1")
+
 # for tile in tiles:
 #     area[tile[1]][tile[0]] = "#"
 # for a in area:
@@ -56,7 +89,8 @@ def down(tiles, xs, ys):
 #ruch wskzówek zegara obliczanie tego najwiekszego
 
 can_connect = 1
-tile = first_search(tiles)
+first = first_search(tiles)
+tile = first
 
 tile_connections = {(x[0], x[1]): 0 for x in tiles}
 
@@ -70,28 +104,42 @@ while can_connect:
         #print("up")
         tile_connections[(tile[0], tile[1])] += 1
         tile_connections[(tile_up[0], tile_up[1])] += 1
+
+        area[tile_up[1]:tile[1] + 1, tile[0]] = "#"
+
         tile = tile_up
 
     elif tile_right and tile_connections[(tile_right[0], tile_right[1])] < 2:
         #print("right")
         tile_connections[(tile[0], tile[1])] += 1
         tile_connections[(tile_right[0], tile_right[1])] += 1
+
+        area[tile[1], tile[0]:tile_right[0] + 1] = "#"
+
         tile = tile_right
 
     elif tile_down and tile_connections[(tile_down[0], tile_down[1])] < 2:
         #print("down")
         tile_connections[(tile[0], tile[1])] += 1
         tile_connections[(tile_down[0], tile_down[1])] += 1
+
+        area[tile[1]:tile_down[1] + 1, tile[0]] = "#"
+
         tile = tile_down
 
     elif tile_left and tile_connections[(tile_left[0], tile_left[1])] < 2:
         #print("left")
         tile_connections[(tile[0], tile[1])] += 1
         tile_connections[(tile_left[0], tile_left[1])] += 1
+
+        area[tile[1], tile_left[0]:tile[0] + 1] = "#"
+
         tile = tile_left
 
     else:
         can_connect = 0
 
+area[first[1] + 1, first[0] + 1] = "#"
+filling(first[0] + 1, first[1] + 1)
 
-
+print(area)
