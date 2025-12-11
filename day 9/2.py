@@ -1,8 +1,10 @@
 import numpy as np
+from numba import njit
+from collections import deque
 import sys
-sys.setrecursionlimit(1000)
+sys.setrecursionlimit(50000)
 
-with open("example_input.txt", "r") as f:
+with open("input.txt", "r") as f:
     file = f.readlines()
 
 tiles = [[int(x) for x in y.strip("\n").split(",")] for y in file]
@@ -10,35 +12,66 @@ tiles = [[int(x) for x in y.strip("\n").split(",")] for y in file]
 max_x = max(x[0] for x in tiles)
 max_y = max(x[1] for x in tiles)
 
-def filling(x, y):
-    global area
-    print(area)
-    if area[y + 1][x] == ".":
-        i = 0
-        while area[y + 1 + i][x] != "#":
-            area[y + 1 + i][x] = "#"
-            i += 1
-        filling(x, y + i +1)
-    if area[y][x + 1] == ".":
-        i = 0
-        while area[y][x + 1 + i] != "#":
-            area[y][x + 1 + i] = "#"
-            i += 1
-        filling(x + 1 + i, y)
-    if area[y - 1][x] == ".":
-        i = 0
-        while area[y - 1 - i][x] != "#":
-            area[y - 1 - i][x] = "#"
-            i += 1
-        filling(x, y - 1 - i)
-    if area[y][x - 1] == ".":
-        i = 0
-        while area[y][x - 1 - i] != "#":
-            area[y][x - 1 - i] = "#"
-            i += 1
-        filling(x - 1 - i, y)
+# def filling(x, y):
+#     global area
+#
+#     if area[y + 1][x] == ".":
+#         i = 0
+#         while area[y + 1 + i][x] != "#":
+#             area[y + 1 + i][x] = "#"
+#             i += 1
+#         filling(x, y + i)
+#     if area[y][x + 1] == ".":
+#         i = 0
+#         while area[y][x + 1 + i] != "#":
+#             area[y][x + 1 + i] = "#"
+#             i += 1
+#         filling(x + i, y)
+#     if area[y - 1][x] == ".":
+#         i = 0
+#         while area[y - 1 - i][x] != "#":
+#             area[y - 1 - i][x] = "#"
+#             i += 1
+#         filling(x, y - i)
+#     if area[y][x - 1] == ".":
+#         i = 0
+#         while area[y][x - 1 - i] != "#":
+#             area[y][x - 1 - i] = "#"
+#             i += 1
+#         filling(x - i, y)
 
 #znalezc poczatek i szukac jak zegar i laczyc w area i tabela connect
+
+from numba import njit
+
+
+def filling_iterative(area, start_x, start_y):
+
+    rows, cols = area.shape
+    stack = deque()
+    stack.append((start_x, start_y))
+
+
+    while len(stack):
+        x, y = stack.pop()
+
+        # sprawdzamy czy pole można wypełnić
+        if area[y, x] != '.':
+            continue
+
+        area[y, x] = '#'
+
+        # dodajemy sąsiednie pola do stosu
+        if y + 1 < rows and area[y + 1, x] == '.':
+            stack.append((x, y + 1))
+        if y - 1 >= 0 and area[y - 1, x] == '.':
+            stack.append((x, y - 1))
+        if x + 1 < cols and area[y, x + 1] == '.':
+            stack.append((x + 1, y))
+        if x - 1 >= 0 and area[y, x - 1] == '.':
+            stack.append((x - 1, y))
+
+
 def first_search(tiles):
     min_y = min(x[1] for x in tiles)
     min_row = [x for x in tiles if x[1] == min_y]
@@ -80,6 +113,7 @@ def down(tiles, xs, ys):
 
 #area = [['.' for x in range(max_x+5)] for y in range(max_y+5)]
 area = np.full((max_y + 3, max_x + 3), ".", dtype="U1")
+print("area")
 
 # for tile in tiles:
 #     area[tile[1]][tile[0]] = "#"
@@ -139,7 +173,9 @@ while can_connect:
     else:
         can_connect = 0
 
-area[first[1] + 1, first[0] + 1] = "#"
-filling(first[0] + 1, first[1] + 1)
+#area[first[1] + 1, first[0] + 1] = "#"
+
+print("filling")
+#filling_iterative(area, first[0] + 1, first[1] + 1)
 
 print(area)
