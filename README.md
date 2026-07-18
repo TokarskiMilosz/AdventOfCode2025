@@ -11,5 +11,5 @@ The process of developing these solutions generally relied on a two-step, iterat
 
 ## Technologies and Execution
 
-* **Programming Language:** [Insert used language, e.g., Python 3.x / C++ / Java]
+* **Programming Language: Python
 * **How to Run:** To test the code for a specific day, execute the main script while providing the corresponding input data file (`input.txt`).
